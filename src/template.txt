@@ -1,5 +1,9 @@
 advent_of_code::solution!(%DAY_NUMBER%);
 
+#[cfg(not(feature = "dhat"))]
+#[global_allocator]
+static GLOBAL: tikv_jemallocator::Jemalloc = tikv_jemallocator::Jemalloc;
+
 pub fn part_one(input: &str) -> Option<u32> {
     None
 }

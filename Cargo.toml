@@ -14,6 +14,15 @@ doctest = false
 inherits = "release"
 debug = 1
 
+[profile.release]
+# Increases compile time but decrease execution time
+codegen-units = 1
+lto = "fat"
+# Since we don't use catch_unwind, we might as well abort on error (decreases binary size)
+panic = "abort"
+# Remove symbols from the final binary (decreases binary size)
+strip = "symbols"
+
 [features]
 dhat-heap = ["dhat"]
 today = ["chrono"]
@@ -26,5 +35,7 @@ chrono = { version = "0.4.38", optional = true }
 dhat = { version = "0.3.3", optional = true }
 pico-args = "0.5.0"
 tinyjson = "2.5.1"
+
+tikv-jemallocator = "0.6.0"
 
 # Solution dependencies
