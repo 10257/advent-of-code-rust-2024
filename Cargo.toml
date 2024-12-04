@@ -37,5 +37,8 @@ pico-args = "0.5.0"
 tinyjson = "2.5.1"
 
 tikv-jemallocator = "0.6.0"
+regex = "1.11.1"
+itertools = "0.13.0"
+smallvec = "1.13.2"
 
 # Solution dependencies

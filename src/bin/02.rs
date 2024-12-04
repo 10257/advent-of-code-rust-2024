@@ -1,10 +1,12 @@
+use smallvec::{smallvec, SmallVec};
+
 advent_of_code::solution!(2);
 
 #[cfg(not(feature = "dhat"))]
 #[global_allocator]
 static GLOBAL: tikv_jemallocator::Jemalloc = tikv_jemallocator::Jemalloc;
 
-fn is_safe(report: &Vec<i32>) -> bool
+fn is_safe(report: &[i32]) -> bool
 {
     let mut direction = true;
     if report[0] < report[1] {
@@ -29,7 +31,7 @@ pub fn part_one(input: &str) -> Option<u32> {
     let mut safe_report = 0;
     for line in input.lines() {
         let values = line.split_ascii_whitespace();
-        let mut report: Vec<i32> = vec![];
+        let mut report: SmallVec<[i32; 10]> = smallvec![];
         for val in values {
             report.push(val.parse::<i32>().unwrap());
         }
@@ -46,7 +48,7 @@ pub fn part_two(input: &str) -> Option<u32> {
     let mut safe_report = 0;
     for line in input.lines() {
         let values = line.split_ascii_whitespace();
-        let mut report: Vec<i32> = vec![];
+        let mut report: SmallVec<[i32; 10]> = smallvec![];
         for val in values {
             report.push(val.parse::<i32>().unwrap());
         }
