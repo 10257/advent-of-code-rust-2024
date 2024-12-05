@@ -22,8 +22,8 @@ pub fn part_two(input: &str) -> Option<u32> {
     let mut do_mul = true;
     let re = Regex::new(r"do(?:n't)?\(\)|mul\(([0-9]+),([0-9]+)\)").unwrap();
 
-    re.captures_iter(input).for_each(|c| {
-        match c.get(0).unwrap().as_str() {
+    re.captures_iter(input)
+        .for_each(|c| match c.get(0).unwrap().as_str() {
             "do()" => do_mul = true,
             "don't()" => do_mul = false,
             _ if do_mul => {
@@ -31,8 +31,7 @@ pub fn part_two(input: &str) -> Option<u32> {
                 multiplication += a.parse::<u32>().unwrap() * b.parse::<u32>().unwrap();
             }
             _ => (),
-        }
-    });
+        });
     Some(multiplication)
 }
 
