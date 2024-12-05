@@ -1,3 +1,4 @@
+use itertools::Itertools;
 use smallvec::{smallvec, SmallVec};
 
 advent_of_code::solution!(2);
@@ -6,76 +7,74 @@ advent_of_code::solution!(2);
 #[global_allocator]
 static GLOBAL: tikv_jemallocator::Jemalloc = tikv_jemallocator::Jemalloc;
 
-fn is_safe(report: &[i32]) -> bool
-{
-    let mut direction = true;
-    if report[0] < report[1] {
-        direction = false;
-    }
-    let mut safe = true;
-    for values in report.windows(2) {
-        let diff = values[0] - values[1];
-        if (direction && diff < 0)
-            || (!direction && diff > 0)
-            || diff.abs() < 1
-            || diff.abs() > 3
-        {
-            safe = false;
-            break;
-        }
-    }
-    safe
+fn is_safe(report: &[i32]) -> bool {
+    let direction = report[0] >= report[1];
+    let range = 1..=3;
+    return report.iter().tuple_windows().all(|(&a, &b)| {
+        // println!("{} {} {:?}", a, b, ((direction && a > b) || (!direction && a < b)) && range.contains(&a.abs_diff(b)));
+        ((direction && a > b) || (!direction && a < b)) && range.contains(&a.abs_diff(b))
+    });
 }
 
 pub fn part_one(input: &str) -> Option<u32> {
-    let mut safe_report = 0;
-    for line in input.lines() {
-        let values = line.split_ascii_whitespace();
-        let mut report: SmallVec<[i32; 10]> = smallvec![];
-        for val in values {
-            report.push(val.parse::<i32>().unwrap());
-        }
+    // rustier but slower... is there an another way?
+    let safe_report = input
+        .lines()
+        .filter(|&line| {
+            // this is the slower: 
+            // let report = line
+            //     .split_ascii_whitespace()
+            //     .map(|nb| nb.parse::<i32>().unwrap())
+            //     .collect::<SmallVec<[i32; 10]>>();
+            // than this
+            let values = line.split_ascii_whitespace();
+            let mut report: SmallVec<[i32; 10]> = smallvec![];
+            for val in values {
+                report.push(val.parse::<i32>().unwrap());
+            }
+            // end here 
+            is_safe(&report)
+        })
+        .count() as u32;
 
-        if is_safe(&report) {
-            safe_report += 1;
-            // println!("safe\t{:?}", report);
-        }
-    }
     Some(safe_report)
 }
 
 pub fn part_two(input: &str) -> Option<u32> {
-    let mut safe_report = 0;
-    for line in input.lines() {
-        let values = line.split_ascii_whitespace();
-        let mut report: SmallVec<[i32; 10]> = smallvec![];
-        for val in values {
-            report.push(val.parse::<i32>().unwrap());
-        }
-
-        let mut safe = is_safe(&report);
-
-        if safe {
-            safe_report += 1;
-            // println!("safe\t{:?}", report);
-        } else {
-            let report_len = report.len();
-            for i in 0..report_len {
-                let mut report_alt = report.clone();
-                report_alt.remove(i);
-                if is_safe(&report_alt)
-                {
-                    // println!("alt safe\t{:?}", report_alt);
-                    safe = true;
-                    break;
+    let safe_report = input
+        .lines()
+        .filter(|&line| {
+            // this is the slower: 
+            let report = line
+                .split_ascii_whitespace()
+                .map(|nb| nb.parse::<i32>().unwrap())
+                .collect::<SmallVec<[i32; 10]>>();
+            // than this
+            // let values = line.split_ascii_whitespace();
+            // let mut report: SmallVec<[i32; 10]> = smallvec![];
+            // for val in values {
+            //     report.push(val.parse::<i32>().unwrap());
+            // }
+            // end here 
+            if !is_safe(&report) {
+                let report_len = report.len();
+                for i in 0..report_len {
+                    let mut report_alt = report.clone();
+                    report_alt.remove(i);
+                    if is_safe(&report_alt) {
+                        // println!("alt safe\t{:?}", report_alt);
+                        // println!("for unsafe\t{:?}", report);
+                        return true
+                    }
                 }
+            } else {
+                return true
+                // println!("safe\t{:?}", report);
             }
-            if safe {
-                // println!("for unsafe\t{:?}", report);
-                safe_report += 1;
-            }
-        }
-    }
+            false
+        })
+        .count() as u32;
+
     Some(safe_report)
 }
 
