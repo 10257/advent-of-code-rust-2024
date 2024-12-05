@@ -40,5 +40,6 @@ tikv-jemallocator = "0.6.0"
 regex = "1.11.1"
 itertools = "0.13.0"
 smallvec = "1.13.2"
+rustc-hash = "2.1.0"
 
 # Solution dependencies
