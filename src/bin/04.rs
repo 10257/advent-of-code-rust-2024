@@ -11,67 +11,73 @@ pub fn part_one(input: &str) -> Option<u32> {
     for i in 0..len {
         for j in 0..len {
             if grid[i][j] == b'X' {
-                if j + 3 < len && grid[i][j..=j + 3] == [b'X', b'M', b'A', b'S'] {
-                    nb_match += 1;
+                if j + 3 < len {
+                    if grid[i][j..=j + 3] == [b'X', b'M', b'A', b'S'] {
+                        // EAST =>
+                        nb_match += 1;
+                    }
+                    if i + 3 < len // SOUTH EAST =>
+                        && [
+                            grid[i][j],
+                            grid[i + 1][j + 1],
+                            grid[i + 2][j + 2],
+                            grid[i + 3][j + 3],
+                        ] == [b'X', b'M', b'A', b'S']
+                    {
+                        nb_match += 1;
+                    }
                 }
-                if j >= 3 && grid[i][j - 3..=j] == [b'S', b'A', b'M', b'X'] {
-                    nb_match += 1;
+                if j >= 3 {
+                    if grid[i][j - 3..=j] == [b'S', b'A', b'M', b'X'] {
+                        // <= WEST
+                        nb_match += 1;
+                    }
+                    if i >= 3 // <= NORTH WEST
+                        && [
+                            grid[i - 3][j - 3],
+                            grid[i - 2][j - 2],
+                            grid[i - 1][j - 1],
+                            grid[i][j],
+                        ] == [b'S', b'A', b'M', b'X']
+                    {
+                        nb_match += 1;
+                    }
                 }
-                if i + 3 < len
-                    && [grid[i][j], grid[i + 1][j], grid[i + 2][j], grid[i + 3][j]]
+                if i + 3 < len {
+                    if [grid[i][j], grid[i + 1][j], grid[i + 2][j], grid[i + 3][j]]
                         == [b'X', b'M', b'A', b'S']
-                {
-                    nb_match += 1;
+                    {
+                        // SOUTH
+                        nb_match += 1;
+                    }
+                    if j >= 3 // SOUTH WEST
+                        && [
+                            grid[i + 3][j - 3],
+                            grid[i + 2][j - 2],
+                            grid[i + 1][j - 1],
+                            grid[i][j],
+                        ] == [b'S', b'A', b'M', b'X']
+                    {
+                        nb_match += 1;
+                    }
                 }
-                if i >= 3
-                    && [grid[i - 3][j], grid[i - 2][j], grid[i - 1][j], grid[i][j]]
+                if i >= 3 {
+                    if [grid[i - 3][j], grid[i - 2][j], grid[i - 1][j], grid[i][j]]
                         == [b'S', b'A', b'M', b'X']
-                {
-                    nb_match += 1;
-                }
-                if i + 3 < len
-                    && j + 3 < len
-                    && [
-                        grid[i][j],
-                        grid[i + 1][j + 1],
-                        grid[i + 2][j + 2],
-                        grid[i + 3][j + 3],
-                    ] == [b'X', b'M', b'A', b'S']
-                {
-                    nb_match += 1;
-                }
-                if i >= 3
-                    && j >= 3
-                    && [
-                        grid[i - 3][j - 3],
-                        grid[i - 2][j - 2],
-                        grid[i - 1][j - 1],
-                        grid[i][j],
-                    ] == [b'S', b'A', b'M', b'X']
-                {
-                    nb_match += 1;
-                }
-                if i >= 3
-                    && j + 3 < len
-                    && [
-                        grid[i][j],
-                        grid[i - 1][j + 1],
-                        grid[i - 2][j + 2],
-                        grid[i - 3][j + 3],
-                    ] == [b'X', b'M', b'A', b'S']
-                {
-                    nb_match += 1;
-                }
-                if i + 3 < len
-                    && j >= 3
-                    && [
-                        grid[i + 3][j - 3],
-                        grid[i + 2][j - 2],
-                        grid[i + 1][j - 1],
-                        grid[i][j],
-                    ] == [b'S', b'A', b'M', b'X']
-                {
-                    nb_match += 1;
+                    {
+                        // NORTH
+                        nb_match += 1;
+                    }
+                    if j + 3 < len // NORTH EAST
+                        && [
+                            grid[i][j],
+                            grid[i - 1][j + 1],
+                            grid[i - 2][j + 2],
+                            grid[i - 3][j + 3],
+                        ] == [b'X', b'M', b'A', b'S']
+                    {
+                        nb_match += 1;
+                    }
                 }
             }
         }
