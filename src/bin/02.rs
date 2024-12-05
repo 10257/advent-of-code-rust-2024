@@ -21,7 +21,7 @@ pub fn part_one(input: &str) -> Option<u32> {
     let safe_report = input
         .lines()
         .filter(|&line| {
-            // this is the slower: 
+            // this is the slower:
             // let report = line
             //     .split_ascii_whitespace()
             //     .map(|nb| nb.parse::<i32>().unwrap())
@@ -32,7 +32,7 @@ pub fn part_one(input: &str) -> Option<u32> {
             for val in values {
                 report.push(val.parse::<i32>().unwrap());
             }
-            // end here 
+            // end here
             is_safe(&report)
         })
         .count() as u32;
@@ -44,7 +44,7 @@ pub fn part_two(input: &str) -> Option<u32> {
     let safe_report = input
         .lines()
         .filter(|&line| {
-            // this is the slower: 
+            // this is the slower:
             let report = line
                 .split_ascii_whitespace()
                 .map(|nb| nb.parse::<i32>().unwrap())
@@ -55,7 +55,7 @@ pub fn part_two(input: &str) -> Option<u32> {
             // for val in values {
             //     report.push(val.parse::<i32>().unwrap());
             // }
-            // end here 
+            // end here
             if !is_safe(&report) {
                 let report_len = report.len();
                 for i in 0..report_len {
@@ -64,11 +64,11 @@ pub fn part_two(input: &str) -> Option<u32> {
                     if is_safe(&report_alt) {
                         // println!("alt safe\t{:?}", report_alt);
                         // println!("for unsafe\t{:?}", report);
-                        return true
+                        return true;
                     }
                 }
             } else {
-                return true
+                return true;
                 // println!("safe\t{:?}", report);
             }
             false
