@@ -23,13 +23,14 @@ pub fn part_two(input: &str) -> Option<u32> {
     let re = Regex::new(r"do(?:n't)?\(\)|mul\(([0-9]+),([0-9]+)\)").unwrap();
 
     re.captures_iter(input).for_each(|c| {
-        let mul = c.get(0).unwrap().as_str();
-        // println!("{mul:?}");
-        if (mul == "do()" && !do_mul) || (mul == "don't()" && do_mul) {
-            do_mul = !do_mul;
-        } else if mul.starts_with('m') && do_mul {
-            let (a, b) = (c.get(1).unwrap().as_str(), c.get(2).unwrap().as_str());
-            multiplication += a.parse::<u32>().unwrap() * b.parse::<u32>().unwrap();
+        match c.get(0).unwrap().as_str() {
+            "do()" => do_mul = true,
+            "don't()" => do_mul = false,
+            _ if do_mul => {
+                let (a, b) = (c.get(1).unwrap().as_str(), c.get(2).unwrap().as_str());
+                multiplication += a.parse::<u32>().unwrap() * b.parse::<u32>().unwrap();
+            }
+            _ => (),
         }
     });
     Some(multiplication)
@@ -47,7 +48,9 @@ mod tests {
 
     #[test]
     fn test_part_two() {
-        let result = part_two(&advent_of_code::template::read_file_part("examples", DAY, 2));
+        let result = part_two(&advent_of_code::template::read_file_part(
+            "examples", DAY, 2,
+        ));
         assert_eq!(result, Some(48));
     }
 }
