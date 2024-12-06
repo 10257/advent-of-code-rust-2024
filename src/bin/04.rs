@@ -6,8 +6,9 @@ static GLOBAL: tikv_jemallocator::Jemalloc = tikv_jemallocator::Jemalloc;
 
 pub fn part_one(input: &str) -> Option<u32> {
     let grid: Vec<&[u8]> = input.lines().map(|str| str.as_bytes()).collect();
-    let mut nb_match: u32 = 0;
     let len = grid.len();
+
+    let mut nb_match: u32 = 0;
     for i in 0..len {
         for j in 0..len {
             if grid[i][j] == b'X' {
@@ -84,43 +85,82 @@ pub fn part_one(input: &str) -> Option<u32> {
     }
 
     Some(nb_match)
+
+    // tried qnother way but is slower
+    // let mut is_it_xmas: Vec<[u8;4]> = vec![];
+    // for i in 0..len {
+    //     for j in 0..len {
+    //         if grid[i][j] == b'X' {
+    //             if j + 3 < len {
+    //                 is_it_xmas.push(grid[i][j..=j + 3].try_into().unwrap()); // EAST
+    //                 if i + 3 < len { // SOUTH EAST =>
+    //                     is_it_xmas.push([
+    //                         grid[i][j],
+    //                         grid[i + 1][j + 1],
+    //                         grid[i + 2][j + 2],
+    //                         grid[i + 3][j + 3],
+    //                     ]);
+    //                 }
+    //             }
+    //             if j >= 3 {
+    //                 is_it_xmas.push([grid[i][j], grid[i][j - 1], grid[i][j - 2], grid[i][j - 3]]); // <= WEST
+    //                 // [grid[i][j], grid[i][j - 1], grid[i][j - 2], grid[i][j - 3]]
+    //                 if i >= 3{ // <= NORTH WEST
+    //                     is_it_xmas.push([
+    //                         grid[i][j],
+    //                         grid[i - 1][j - 1],
+    //                         grid[i - 2][j - 2],
+    //                         grid[i - 3][j - 3],
+    //                     ]);
+    //                 }
+    //             }
+    //             if i + 3 < len {
+    //                 is_it_xmas.push([grid[i][j], grid[i + 1][j], grid[i + 2][j], grid[i + 3][j]]);// SOUTH
+    //                 if j >= 3 { // SOUTH WEST
+    //                     is_it_xmas.push([
+    //                         grid[i][j],
+    //                         grid[i + 1][j - 1],
+    //                         grid[i + 2][j - 2],
+    //                         grid[i + 3][j - 3],
+    //                     ]);
+    //                 }
+    //             }
+    //             if i >= 3 {
+    //                 is_it_xmas.push([grid[i][j], grid[i - 1][j], grid[i - 2][j], grid[i - 3][j]]);// NORTH
+    //                 if j + 3 < len { // NORTH EAST
+    //                     is_it_xmas.push([
+    //                         grid[i][j],
+    //                         grid[i - 1][j + 1],
+    //                         grid[i - 2][j + 2],
+    //                         grid[i - 3][j + 3],
+    //                     ]);
+    //                 }
+    //             }
+    //         }
+    //     }
+    // }
+    // Some(is_it_xmas.into_iter().filter(|&x|{
+    //     // println!("{:?}", x);
+    //     x == [b'X', b'M', b'A', b'S']}).count() as u32)
 }
 
 pub fn part_two(input: &str) -> Option<u32> {
     let grid: Vec<&[u8]> = input.lines().map(|str| str.as_bytes()).collect();
     let mut nb_match: u32 = 0;
-    let len = grid.len();
-    for i in 0..len {
-        for j in 0..len {
+    let len = grid.len() - 1;
+    for i in 1..len {
+        for j in 1..len {
             if grid[i][j] == b'A' {
-                if i + 1 < len
-                    && i >= 1
-                    && j + 1 < len
-                    && j >= 1
-                    && ([
-                        grid[i - 1][j - 1],
-                        grid[i - 1][j + 1],
-                        grid[i + 1][j - 1],
-                        grid[i + 1][j + 1],
-                    ] == [b'S', b'S', b'M', b'M']
-                        || [
-                            grid[i - 1][j - 1],
-                            grid[i - 1][j + 1],
-                            grid[i + 1][j - 1],
-                            grid[i + 1][j + 1],
-                        ] == [b'M', b'S', b'M', b'S']
-                        || [
-                            grid[i - 1][j - 1],
-                            grid[i - 1][j + 1],
-                            grid[i + 1][j - 1],
-                            grid[i + 1][j + 1],
-                        ] == [b'S', b'M', b'S', b'M']
-                        || [
-                            grid[i - 1][j - 1],
-                            grid[i - 1][j + 1],
-                            grid[i + 1][j - 1],
-                            grid[i + 1][j + 1],
-                        ] == [b'M', b'M', b'S', b'S'])
+                let diag = [
+                    grid[i - 1][j - 1],
+                    grid[i - 1][j + 1],
+                    grid[i + 1][j - 1],
+                    grid[i + 1][j + 1],
+                ];
+                if diag == [b'S', b'S', b'M', b'M']
+                    || diag == [b'M', b'S', b'M', b'S']
+                    || diag == [b'S', b'M', b'S', b'M']
+                    || diag == [b'M', b'M', b'S', b'S']
                 {
                     nb_match += 1;
                 }
