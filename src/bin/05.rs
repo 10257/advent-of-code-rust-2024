@@ -8,24 +8,23 @@ advent_of_code::solution!(5);
 #[global_allocator]
 static GLOBAL: tikv_jemallocator::Jemalloc = tikv_jemallocator::Jemalloc;
 
-pub fn check_slice(rule_set: Option<&FxHashSet<u8>>, page_list: &[u8], index: &usize) -> bool {
-    let page_remain = &page_list[*index + 1..];
-    if rule_set.is_none() && page_remain.len() > 1 {
-        return false;
-    }
-
-    let page_remain_hash = FxHashSet::from_iter(page_remain.iter().copied());
-    // println!("rule:{:?} - remain:{:?}", rule_set, page_remain_hash);
-    if !rule_set
-        .unwrap_or(&FxHashSet::default())
-        .is_superset(&page_remain_hash)
-    {
-        return false;
-    }
-    let page_done_hash = FxHashSet::from_iter(page_list[..*index].iter().copied());
-    // println!("rule:{:?} - done:{:?}", rule_set, page_done_hash);
-    if !page_done_hash.is_disjoint(&rule_set.unwrap_or(&FxHashSet::default())) {
-        return false;
+pub fn check_page_order(
+    rules: &FxHashMap<u8, FxHashSet<u8>>,
+    page_list: &[u8],
+    page_list_hash: &FxHashSet<u8>,
+) -> bool {
+    let mut intersect = 100;
+    for &page_nb in page_list {
+        let new_intersect = rules
+            .get(&page_nb)
+            .unwrap_or(&FxHashSet::default())
+            .intersection(page_list_hash)
+            .count() as u8;
+        intersect = if new_intersect < intersect {
+            new_intersect
+        } else {
+            return false;
+        }
     }
     true
 }
@@ -44,19 +43,40 @@ pub fn part_one(input: &str) -> Option<u32> {
     let sum_result = to_print_str.lines().fold(0, |acc, line| {
         let values = line.split(',');
         let mut page_list: SmallVec<[u8; 24]> = smallvec![];
+        let mut page_list_hash: FxHashSet<u8> = FxHashSet::default();
         for val in values {
-            page_list.push(val.parse().unwrap());
+            let value = val.parse().unwrap();
+            page_list.push(value);
+            page_list_hash.insert(value);
         }
-        if page_list.iter().enumerate().all(|(nb, page_num)| {
-            // eprintln!("len {:?} - i {:?}", page_list.len(), nb);
-            check_slice(rules.get(page_num), &page_list, &nb)
-        }) {
-            // eprintln!("{} {}", acc, page_list[page_list.len() / 2]);
+        if check_page_order(&rules, &page_list, &page_list_hash) {
             return acc + page_list[page_list.len() / 2] as u32;
         }
         acc
     });
     Some(sum_result)
+}
+
+pub fn find_page_order(
+    rules: &FxHashMap<u8, FxHashSet<u8>>,
+    page_list: &[u8],
+    page_list_hash: &FxHashSet<u8>,
+) -> SmallVec<[u8; 24]> {
+    let mut order_list: SmallVec<[(u8, u8); 24]> = smallvec![];
+
+    for &page_nb in page_list {
+        let common = rules
+            .get(&page_nb)
+            .unwrap_or(&FxHashSet::default())
+            .intersection(page_list_hash)
+            .count() as u8;
+        order_list.push((common, page_nb));
+    }
+    order_list.sort_unstable();
+    order_list.reverse();
+    let (_, pages_new): (SmallVec<[u8; 24]>, SmallVec<[u8; 24]>) =
+        order_list.iter().copied().unzip();
+    pages_new
 }
 
 pub fn part_two(input: &str) -> Option<u32> {
@@ -70,37 +90,18 @@ pub fn part_two(input: &str) -> Option<u32> {
             .unwrap();
         rules.entry(page_n1).or_default().insert(page_n2);
     }
-    let sum_result = to_print_str.lines().filter_map(|line| {
+    let sum_result = to_print_str.lines().fold(0, |acc, line| {
         let values = line.split(',');
         let mut page_list: SmallVec<[u8; 24]> = smallvec![];
+        let mut page_list_hash: FxHashSet<u8> = FxHashSet::default();
         for val in values {
-            page_list.push(val.parse().unwrap());
+            let value = val.parse().unwrap();
+            page_list.push(value);
+            page_list_hash.insert(value);
         }
-        if !page_list.iter().enumerate().all(|(nb, page_num)| {
-            // eprintln!("len {:?} - i {:?}", page_list.len(), nb);
-            check_slice(rules.get(page_num), &page_list, &nb)
-        })
-        {
-            return Some(page_list);
-        }
-        None
-    }).fold(0, |acc, wrong_list| {
-        let mut order_list: SmallVec<[(u8, u8); 24]> = smallvec![];
-
-        let page_list_hash = FxHashSet::from_iter(wrong_list.iter().copied());
-        for page_nb in wrong_list {
-            let common = rules.get(&page_nb)
-                .unwrap_or(&FxHashSet::default()).intersection(&page_list_hash).count() as u8;
-            order_list.push((common, page_nb));
-        }
-        order_list.sort_unstable();
-        order_list.reverse();
-        let (_, pages_new): (SmallVec<[u8; 24]>, SmallVec<[u8; 24]>) = order_list.iter().copied().unzip();
-        if pages_new.iter().enumerate().all(|(nb, page_num)| {
-            check_slice(rules.get(page_num), &pages_new, &nb)
-        })
-        {
-            return acc + pages_new[pages_new.len() / 2] as u32;
+        let new_page_order = find_page_order(&rules, &page_list, &page_list_hash);
+        if page_list != new_page_order {
+            return acc + new_page_order[new_page_order.len() / 2] as u32;
         }
         acc
     });
