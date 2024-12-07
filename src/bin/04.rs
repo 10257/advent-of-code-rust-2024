@@ -150,20 +150,33 @@ pub fn part_two(input: &str) -> Option<u32> {
     let len = grid.len() - 1;
     for i in 1..len {
         for j in 1..len {
-            if grid[i][j] == b'A' {
-                let diag = [
-                    grid[i - 1][j - 1],
-                    grid[i - 1][j + 1],
-                    grid[i + 1][j - 1],
-                    grid[i + 1][j + 1],
-                ];
-                if diag == [b'S', b'S', b'M', b'M']
-                    || diag == [b'M', b'S', b'M', b'S']
-                    || diag == [b'S', b'M', b'S', b'M']
-                    || diag == [b'M', b'M', b'S', b'S']
-                {
-                    nb_match += 1;
-                }
+            if grid[i][j] != b'A' {
+                continue;
+            }
+            // try other approach but similar timings
+            // let pair = [grid[i - 1][j - 1], grid[i + 1][j + 1]];
+            // if ([grid[i - 1][j - 1], grid[i + 1][j + 1]] != [b'M', b'S'] && [grid[i - 1][j - 1], grid[i + 1][j + 1]] != [b'S', b'M'])
+            //  || ([grid[i - 1][j + 1], grid[i + 1][j - 1]] != [b'M', b'S'] && [grid[i - 1][j + 1], grid[i + 1][j - 1]] != [b'S', b'M']) {
+            //     continue;
+            // }
+
+            // let pair = [grid[i - 1][j + 1], grid[i + 1][j - 1]];
+            // if [grid[i - 1][j + 1], grid[i + 1][j - 1]] != [b'M', b'S'] && [grid[i - 1][j + 1], grid[i + 1][j - 1]] != [b'S', b'M'] {
+            //     continue;
+            // }
+            // nb_match += 1;
+            let diag = [
+                grid[i - 1][j - 1],
+                grid[i - 1][j + 1],
+                grid[i + 1][j - 1],
+                grid[i + 1][j + 1],
+            ];
+            if diag == [b'S', b'S', b'M', b'M']
+                || diag == [b'M', b'S', b'M', b'S']
+                || diag == [b'S', b'M', b'S', b'M']
+                || diag == [b'M', b'M', b'S', b'S']
+            {
+                nb_match += 1;
             }
         }
     }
