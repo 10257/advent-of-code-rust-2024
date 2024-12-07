@@ -8,10 +8,18 @@ advent_of_code::solution!(5);
 #[global_allocator]
 static GLOBAL: tikv_jemallocator::Jemalloc = tikv_jemallocator::Jemalloc;
 
-pub fn check_slice(rule_set: Option<&FxHashSet<u32>>, page_list: &[u32], index: &usize) -> bool
-{
-    let page_remain = &page_list[*index+1..];
+pub fn check_slice(rule_set: Option<&FxHashSet<u8>>, page_list: &[u8], index: &usize) -> bool {
+    let page_remain = &page_list[*index + 1..];
     if rule_set.is_none() && page_remain.len() > 1 {
+        return false;
+    }
+
+    let page_remain_hash = FxHashSet::from_iter(page_remain.iter().copied());
+    // println!("rule{:?} - remain{:?}", rule_set, page_remain_hash);
+    if !rule_set
+        .unwrap_or(&FxHashSet::default())
+        .is_superset(&page_remain_hash)
+    {
         return false;
     }
     let page_done_hash = FxHashSet::from_iter(page_list[..*index].iter().copied());
@@ -19,29 +27,27 @@ pub fn check_slice(rule_set: Option<&FxHashSet<u32>>, page_list: &[u32], index: 
     if !page_done_hash.is_disjoint(&rule_set.unwrap_or(&FxHashSet::default())) {
         return false;
     }
-    let page_remain_hash = FxHashSet::from_iter(page_remain.iter().copied());
-    // println!("rule{:?} - remain{:?}", rule_set, page_remain_hash);
-    rule_set.unwrap_or(&FxHashSet::default()).is_superset(&page_remain_hash)
+    true
 }
 
 pub fn part_one(input: &str) -> Option<u32> {
-    let mut rules: FxHashMap<u32, FxHashSet<u32>> = FxHashMap::default();
+    let mut rules: FxHashMap<u8, FxHashSet<u8>> = FxHashMap::default();
     let (rules_str, to_print_str) = input.split("\n\n").next_tuple().unwrap();
     for line in rules_str.lines() {
         let (page_n1, page_n2) = line
             .split('|')
-            .map(|nb| nb.parse::<u32>().unwrap())
+            .map(|nb| nb.parse().unwrap())
             .next_tuple()
             .unwrap();
         rules.entry(page_n1).or_default().insert(page_n2);
     }
-    let sum_result = to_print_str.lines().fold(0, |acc, line|{
+    let sum_result = to_print_str.lines().fold(0, |acc, line| {
         let values = line.split(',');
-        let mut page_list: SmallVec<[u32; 24]> = smallvec![];
+        let mut page_list: SmallVec<[u8; 24]> = smallvec![];
         for val in values {
-            page_list.push(val.parse::<u32>().unwrap());
+            page_list.push(val.parse().unwrap());
         }
-        if page_list.iter().enumerate().all(|(nb, page_num)|{
+        if page_list.iter().enumerate().all(|(nb, page_num)| {
             // eprintln!("len {:?} - i {:?}", page_list.len(), nb);
             check_slice(rules.get(page_num), &page_list, &nb)
         }) {
@@ -50,7 +56,7 @@ pub fn part_one(input: &str) -> Option<u32> {
         }
         acc
     });
-    Some(sum_result)
+    Some(sum_result as u32)
 }
 
 pub fn part_two(input: &str) -> Option<u32> {
