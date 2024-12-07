@@ -45,16 +45,16 @@ pub fn part_two(input: &str) -> Option<u32> {
         .lines()
         .filter(|&line| {
             // this is the slower:
-            let report = line
-                .split_ascii_whitespace()
-                .map(|nb| nb.parse::<i32>().unwrap())
-                .collect::<SmallVec<[i32; 10]>>();
+            // let report = line
+            //     .split_ascii_whitespace()
+            //     .map(|nb| nb.parse::<i32>().unwrap())
+            //     .collect::<SmallVec<[i32; 10]>>();
             // than this
-            // let values = line.split_ascii_whitespace();
-            // let mut report: SmallVec<[i32; 10]> = smallvec![];
-            // for val in values {
-            //     report.push(val.parse::<i32>().unwrap());
-            // }
+            let values = line.split_ascii_whitespace();
+            let mut report: SmallVec<[i32; 10]> = smallvec![];
+            for val in values {
+                report.push(val.parse::<i32>().unwrap());
+            }
             // end here
             if !is_safe(&report) {
                 let report_len = report.len();
