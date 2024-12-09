@@ -1,6 +1,6 @@
-use std::{borrow::BorrowMut, ops::Add};
+use std::ops::Add;
 
-use itertools::enumerate;
+use rustc_hash::FxHashSet;
 
 advent_of_code::solution!(6);
 
@@ -8,7 +8,7 @@ advent_of_code::solution!(6);
 #[global_allocator]
 static GLOBAL: tikv_jemallocator::Jemalloc = tikv_jemallocator::Jemalloc;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Pos {
     x: i16,
     y: i16,
@@ -25,7 +25,7 @@ impl Add<Increment> for Pos {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Direction {
     Up,
     Right,
@@ -99,9 +99,7 @@ pub fn print_grid(grid: &[Vec<u8>]) {
     println!("================");
 }
 
-pub fn part_one(input: &str) -> Option<u32> {
-    let mut grid: Vec<Vec<u8>> = input.lines().map(|str| str.as_bytes().to_vec()).collect();
-    let len = grid.len() as i16;
+pub fn find_guard(grid: &[Vec<u8>]) -> (Pos, Increment) {
     let mut guard_dir = Increment::default();
     let mut guard_pos = Pos { x: 0, y: 0 };
     for (r, row_b) in grid.iter().enumerate() {
@@ -121,12 +119,18 @@ pub fn part_one(input: &str) -> Option<u32> {
             y: r as i16,
         };
     }
+    (guard_pos, guard_dir)
+}
+
+pub fn part_one(input: &str) -> Option<u32> {
+    let mut grid: Vec<Vec<u8>> = input.lines().map(|str| str.as_bytes().to_vec()).collect();
+    let len = grid.len() as i16;
+    let (mut guard_pos, mut guard_dir) = find_guard(&grid);
     let mut counter = 1;
     grid[guard_pos.y as usize][guard_pos.x as usize] = b'X';
     loop {
         // println!("{:?} -- step: {} -- guard:{:?}", guard_dir, counter, guard_pos);
         // print_grid(&grid);
-        // let new_pos = Pos { x:guard_pos.x + guard_dir.r, y:guard_pos.y + guard_dir.c };
         let new_pos = guard_pos + guard_dir;
         if new_pos.x < 0 || new_pos.y < 0 || new_pos.x >= len || new_pos.y >= len {
             break;
@@ -141,12 +145,68 @@ pub fn part_one(input: &str) -> Option<u32> {
             guard_pos = new_pos;
         }
     }
-    // println!("{:?} -- {:?}", guard_dir, guard_dir.turn());
+    // print_grid(&grid);
     Some(counter)
 }
 
+pub fn check_alt_path(grid: &[Vec<u8>], mut guard_pos: Pos, mut guard_dir: Increment, pos_bloc: Pos, mut path: FxHashSet<(Pos, Direction)>) -> bool {
+    let mut grid_alt = grid.to_vec();
+    grid_alt[pos_bloc.y as usize][pos_bloc.x as usize] = b'#';
+    grid_alt[guard_pos.y as usize][guard_pos.x as usize] = b'A';
+    path.insert((guard_pos, guard_dir.dir));
+    let len = grid_alt.len() as i16;
+    loop {
+        let new_pos = guard_pos + guard_dir;
+        if new_pos.x < 0 || new_pos.y < 0 || new_pos.x >= len || new_pos.y >= len {
+            // print_grid(&grid_alt);
+            return false;
+        }
+        if grid_alt[new_pos.y as usize][new_pos.x as usize] == b'#' {
+            guard_dir.turn();
+        } else {
+            guard_pos = new_pos;
+            if !path.insert((guard_pos, guard_dir.dir)) {
+                // print_grid(&grid_alt);
+                return true;
+            } else {
+                if grid_alt[new_pos.y as usize][new_pos.x as usize] != b'A' {
+                    grid_alt[new_pos.y as usize][new_pos.x as usize] = b'A';
+                }
+            }
+        }
+    }
+}
+
 pub fn part_two(input: &str) -> Option<u32> {
-    None
+    let mut grid: Vec<Vec<u8>> = input.lines().map(|str| str.as_bytes().to_vec()).collect();
+    let len = grid.len() as i16;
+    let (mut guard_pos, mut guard_dir) = find_guard(&grid);
+    // start pos
+    let mut loop_counter = 0;
+    grid[guard_pos.y as usize][guard_pos.x as usize] = b'X';
+    let mut path: FxHashSet<(Pos, Direction)> = FxHashSet::default();
+    path.insert((guard_pos, guard_dir.dir));
+    loop {
+        // println!("{:?} -- step: {} -- guard:{:?}", guard_dir, counter, guard_pos);
+        // print_grid(&grid);
+        let new_pos = guard_pos + guard_dir;
+        if new_pos.x < 0 || new_pos.y < 0 || new_pos.x >= len || new_pos.y >= len {
+            break;
+        }
+        if check_alt_path(&grid, guard_pos, guard_dir, new_pos, path.clone()) {
+            loop_counter += 1;
+        }
+        if grid[new_pos.y as usize][new_pos.x as usize] == b'#' {
+            guard_dir.turn();
+        } else {
+            if grid[new_pos.y as usize][new_pos.x as usize] != b'X' {
+                grid[new_pos.y as usize][new_pos.x as usize] = b'X';
+            }
+            guard_pos = new_pos;
+            path.insert((guard_pos, guard_dir.dir));
+        }
+    }
+    Some(loop_counter)
 }
 
 #[cfg(test)]
@@ -162,6 +222,6 @@ mod tests {
     #[test]
     fn test_part_two() {
         let result = part_two(&advent_of_code::template::read_file("examples", DAY));
-        assert_eq!(result, None);
+        assert_eq!(result, Some(6));
     }
 }
