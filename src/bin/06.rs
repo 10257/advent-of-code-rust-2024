@@ -149,30 +149,29 @@ pub fn part_one(input: &str) -> Option<u32> {
     Some(counter)
 }
 
-pub fn check_alt_path(grid: &[Vec<u8>], mut guard_pos: Pos, mut guard_dir: Increment, pos_bloc: Pos, mut path: FxHashSet<(Pos, Direction)>) -> bool {
-    let mut grid_alt = grid.to_vec();
-    grid_alt[pos_bloc.y as usize][pos_bloc.x as usize] = b'#';
-    grid_alt[guard_pos.y as usize][guard_pos.x as usize] = b'A';
-    path.insert((guard_pos, guard_dir.dir));
-    let len = grid_alt.len() as i16;
+pub fn check_alt_path(
+    grid: &[Vec<u8>],
+    mut guard_pos: Pos,
+    mut guard_dir: Increment,
+    path: &FxHashSet<(Pos, Direction)>,
+) -> bool {
+    let mut path_test: FxHashSet<(Pos, Direction)> = FxHashSet::default();
+    path_test.insert((guard_pos, guard_dir.dir));
+    let len = grid.len() as i16;
     loop {
         let new_pos = guard_pos + guard_dir;
         if new_pos.x < 0 || new_pos.y < 0 || new_pos.x >= len || new_pos.y >= len {
-            // print_grid(&grid_alt);
             return false;
         }
-        if grid_alt[new_pos.y as usize][new_pos.x as usize] == b'#' {
+        if grid[new_pos.y as usize][new_pos.x as usize] == b'#' {
             guard_dir.turn();
         } else {
             guard_pos = new_pos;
-            if !path.insert((guard_pos, guard_dir.dir)) {
-                // print_grid(&grid_alt);
-                return true;
-            } else {
-                if grid_alt[new_pos.y as usize][new_pos.x as usize] != b'A' {
-                    grid_alt[new_pos.y as usize][new_pos.x as usize] = b'A';
-                }
-            }
+        }
+        if path.contains(&(guard_pos, guard_dir.dir))
+            || !path_test.insert((guard_pos, guard_dir.dir))
+        {
+            return true;
         }
     }
 }
@@ -182,9 +181,9 @@ pub fn part_two(input: &str) -> Option<u32> {
     let len = grid.len() as i16;
     let (mut guard_pos, mut guard_dir) = find_guard(&grid);
     // start pos
-    let mut loop_counter = 0;
     grid[guard_pos.y as usize][guard_pos.x as usize] = b'X';
     let mut path: FxHashSet<(Pos, Direction)> = FxHashSet::default();
+    let mut possible_blocs: FxHashSet<Pos> = FxHashSet::default();
     path.insert((guard_pos, guard_dir.dir));
     loop {
         // println!("{:?} -- step: {} -- guard:{:?}", guard_dir, counter, guard_pos);
@@ -193,20 +192,21 @@ pub fn part_two(input: &str) -> Option<u32> {
         if new_pos.x < 0 || new_pos.y < 0 || new_pos.x >= len || new_pos.y >= len {
             break;
         }
-        if check_alt_path(&grid, guard_pos, guard_dir, new_pos, path.clone()) {
-            loop_counter += 1;
-        }
         if grid[new_pos.y as usize][new_pos.x as usize] == b'#' {
             guard_dir.turn();
         } else {
             if grid[new_pos.y as usize][new_pos.x as usize] != b'X' {
+                grid[new_pos.y as usize][new_pos.x as usize] = b'#';
+                if check_alt_path(&grid, guard_pos, guard_dir, &path) {
+                    possible_blocs.insert(new_pos);
+                }
                 grid[new_pos.y as usize][new_pos.x as usize] = b'X';
             }
             guard_pos = new_pos;
-            path.insert((guard_pos, guard_dir.dir));
         }
+        path.insert((guard_pos, guard_dir.dir));
     }
-    Some(loop_counter)
+    Some(possible_blocs.len() as u32)
 }
 
 #[cfg(test)]
