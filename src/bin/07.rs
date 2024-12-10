@@ -34,6 +34,12 @@ pub fn recurse_calc<const N: usize>(nb_list: &[u64], pos: usize, acc: u64, to_ca
     ops.iter().any(|op| {
         recurse_calc(nb_list, pos + 1, op(acc, nb_list[pos]), to_calc, ops)
     })
+    // this is a bit faster
+    // if recurse_calc(nb_list, pos + 1, ops[0](acc, nb_list[pos]), to_calc, ops)
+    //     || recurse_calc(nb_list, pos + 1, ops[1](acc, nb_list[pos]), to_calc, ops) {
+    //         return true
+    //     }
+    // N == 3 && recurse_calc(nb_list, pos + 1, ops[2](acc, nb_list[pos]), to_calc, ops)
     // but this gives better timings!
     // if recurse_calc(nb_list, pos + 1, add(acc, nb_list[pos]), to_calc, ops)
     //     || recurse_calc(nb_list, pos + 1, mul(acc, nb_list[pos]), to_calc, ops) {
