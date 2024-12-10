@@ -6,7 +6,21 @@ advent_of_code::solution!(7);
 #[global_allocator]
 static GLOBAL: tikv_jemallocator::Jemalloc = tikv_jemallocator::Jemalloc;
 
-pub fn recurse_calc(nb_list: &SmallVec<[u64; 15]>, pos: usize, acc: u64, to_calc: &u64) -> bool {
+type Operation = fn (u64, u64) -> u64;
+
+pub fn add(a:u64, b:u64) -> u64 {
+    a + b
+}
+
+pub fn mul(a:u64, b:u64) -> u64 {
+    a * b
+}
+
+pub fn concat(a:u64, b:u64) -> u64 {
+    a * 10u64.pow(b.ilog10() + 1) + b
+}
+
+pub fn recurse_calc<const N: usize>(nb_list: &[u64], pos: usize, acc: u64, to_calc: &u64, ops: &[Operation; N]) -> bool {
     if acc > *to_calc {
         return false;
     }
@@ -16,11 +30,20 @@ pub fn recurse_calc(nb_list: &SmallVec<[u64; 15]>, pos: usize, acc: u64, to_calc
         }
         return false;
     }
-    recurse_calc(nb_list, pos + 1, acc + nb_list[pos], to_calc)
-        || recurse_calc(nb_list, pos + 1, acc * nb_list[pos], to_calc)
+    // this is more the rust way!
+    ops.iter().any(|op| {
+        recurse_calc(nb_list, pos + 1, op(acc, nb_list[pos]), to_calc, ops)
+    })
+    // but this gives better timings!
+    // if recurse_calc(nb_list, pos + 1, add(acc, nb_list[pos]), to_calc, ops)
+    //     || recurse_calc(nb_list, pos + 1, mul(acc, nb_list[pos]), to_calc, ops) {
+    //         return true
+    //     }
+    // N == 3 && recurse_calc(nb_list, pos + 1, concat(acc, nb_list[pos]), to_calc, ops)
 }
 
 pub fn part_one(input: &str) -> Option<u64> {
+    let ops: [Operation; 2] = [add, mul];
     let result = input.lines().fold(0, |mut acc, line| {
         let mut line_part = line.split(':');
         let to_calc = line_part.next().unwrap().parse::<u64>().unwrap();
@@ -29,7 +52,7 @@ pub fn part_one(input: &str) -> Option<u64> {
             numbers.push(nb_str.parse().unwrap());
         }
         // println!("================\nlist:{:?}", numbers);
-        if recurse_calc(&numbers, 1, numbers[0], &to_calc) {
+        if recurse_calc(&numbers, 1, numbers[0], &to_calc, &ops) {
             acc += to_calc;
         }
         acc
@@ -37,54 +60,8 @@ pub fn part_one(input: &str) -> Option<u64> {
     Some(result)
 }
 
-pub fn recurse_calc_part2(
-    nb_list: &SmallVec<[u64; 15]>,
-    pos: usize,
-    acc: u64,
-    to_calc: &u64,
-) -> bool {
-    if acc > *to_calc {
-        return false;
-    }
-    if pos == nb_list.len() {
-        if acc == *to_calc {
-            return true;
-        }
-        return false;
-    }
-
-    recurse_calc_part2(nb_list, pos + 1, acc + nb_list[pos], to_calc)
-        || recurse_calc_part2(nb_list, pos + 1, acc * nb_list[pos], to_calc)
-        || recurse_calc_part2(
-            nb_list,
-            pos + 1,
-            acc * 10u64.pow(nb_list[pos].ilog10() + 1) + nb_list[pos],
-            to_calc,
-        )
-    // println!(
-    //     "pos:{:?} -- acc:{:?} + nb:{:?} = {:?}",
-    //     pos,
-    //     acc,
-    //     nb_list[pos],
-    //     acc + nb_list[pos]
-    // );
-    // println!(
-    //     "pos:{:?} -- acc:{:?} * nb:{:?} = {:?}",
-    //     pos,
-    //     acc,
-    //     nb_list[pos],
-    //     acc * nb_list[pos]
-    // );
-    // println!(
-    //     "pos:{:?} -- acc:{:?} || nb:{:?} = {:?}",
-    //     pos,
-    //     acc,
-    //     nb_list[pos],
-    //     acc * 10u64.pow(nb_list[pos].ilog10() + 1) + nb_list[pos]
-    // );
-}
-
 pub fn part_two(input: &str) -> Option<u64> {
+    let ops: [Operation; 3] = [add, mul, concat];
     let result = input.lines().fold(0, |mut acc, line| {
         let mut line_part = line.split(':');
         let to_calc = line_part.next().unwrap().parse::<u64>().unwrap();
@@ -92,7 +69,8 @@ pub fn part_two(input: &str) -> Option<u64> {
         for nb_str in line_part.next().unwrap().split_ascii_whitespace() {
             numbers.push(nb_str.parse().unwrap());
         }
-        if recurse_calc_part2(&numbers, 1, numbers[0], &to_calc) {
+        // println!("================\nlist:{:?}", numbers);
+        if recurse_calc(&numbers, 1, numbers[0], &to_calc, &ops) {
             acc += to_calc;
         }
         acc
