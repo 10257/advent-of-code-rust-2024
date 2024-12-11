@@ -23,10 +23,9 @@ impl Point {
         }
         Some(anti)
     }
-    
 }
 
-pub fn part_one(input: &str) -> Option<u32> {
+pub fn make_antenna_db(input: &str) -> (FxHashMap<u8, Vec<Point>>, usize) {
     let mut antennaes: FxHashMap<u8, Vec<Point>> = FxHashMap::default();
     let mut width = 0;
     input.lines().enumerate().for_each(|(y, line)| {
@@ -40,6 +39,11 @@ pub fn part_one(input: &str) -> Option<u32> {
             }
         });
     });
+    (antennaes, width)
+}
+
+pub fn part_one(input: &str) -> Option<u32> {
+    let (antennaes, width) = make_antenna_db(input);
     // println!("{:#?}", antennaes);
     let mut antinodes: FxHashSet<Point> = FxHashSet::default();
     antennaes.iter().for_each(|(_, positions)| {
@@ -56,10 +60,26 @@ pub fn part_one(input: &str) -> Option<u32> {
 }
 
 pub fn part_two(input: &str) -> Option<u32> {
-    None
+    let (antennaes, width) = make_antenna_db(input);
+    let mut antinodes: FxHashSet<Point> = FxHashSet::default();
+    antennaes.iter().for_each(|(_, positions)| {
+        positions.iter().for_each(|pos|{
+            antinodes.insert(*pos);
+            positions.iter().filter(|&point| point != pos).for_each(|point| {
+                let mut center = *pos;
+                let mut point_cpy = *point;
+                while let Some(anti) = point_cpy.antinodes(&center, &width) {
+                    // println!("{:?}", anti);
+                    antinodes.insert(anti);
+                    point_cpy = center;
+                    center = anti;
+                }
+            });
+        });
+    });
+    Some(antinodes.len() as u32)
 }
-// Hello! J'ai eu ton login par Latha, qui m'a indique que vous etiez en recherche d'equipier pour tanscendance!
-// Nous sommes 2 pour le moment moi (jgreau) et lcozdenm. Est-ce que vous seriez ok pour se rencontrer pour voir si ca matcherais pour travailler ensemble sur le projet?
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -73,6 +93,6 @@ mod tests {
     #[test]
     fn test_part_two() {
         let result = part_two(&advent_of_code::template::read_file("examples", DAY));
-        assert_eq!(result, None);
+        assert_eq!(result, Some(34));
     }
 }
