@@ -8,15 +8,15 @@ static GLOBAL: tikv_jemallocator::Jemalloc = tikv_jemallocator::Jemalloc;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Point {
-    x:i16,
-    y:i16,
+    x: i16,
+    y: i16,
 }
 
 impl Point {
     pub fn antinodes(&self, center: &Point, width: &usize) -> Option<Point> {
         let anti = Point {
             x: center.x + (center.x - self.x),
-            y: center.y + (center.y - self.y)
+            y: center.y + (center.y - self.y),
         };
         if anti.x < 0 || anti.y < 0 || anti.x >= (*width as i16) || anti.y >= (*width as i16) {
             return None;
@@ -32,22 +32,26 @@ pub fn make_antenna_db(input: &str) -> (FxHashMap<u8, Vec<Point>>, usize) {
         if width == 0 {
             width = line.len();
         }
-        line.as_bytes().iter().enumerate().for_each(|(x, &char)|{
-            match char {
+        line.as_bytes()
+            .iter()
+            .enumerate()
+            .for_each(|(x, &char)| match char {
                 b'.' => (),
-                _ => antennaes.entry(char).or_default().push(Point{x:x as i16, y:y as i16}),
-            }
-        });
+                _ => antennaes.entry(char).or_default().push(Point {
+                    x: x as i16,
+                    y: y as i16,
+                }),
+            });
     });
     (antennaes, width)
 }
 
 pub fn find_antinodes<F>(antennaes: FxHashMap<u8, Vec<Point>>, mut anti_f: F)
-    where
-     F: FnMut(&Point, &Point)
+where
+    F: FnMut(&Point, &Point),
 {
     antennaes.iter().for_each(|(_, positions)| {
-        positions.iter().for_each(|pos|{
+        positions.iter().for_each(|pos| {
             positions.iter().for_each(|point| {
                 anti_f(point, pos);
             });
@@ -59,7 +63,7 @@ pub fn part_one(input: &str) -> Option<u32> {
     let (antennaes, width) = make_antenna_db(input);
     // println!("{:#?}", antennaes);
     let mut antinodes: FxHashSet<Point> = FxHashSet::default();
-    find_antinodes(antennaes, |point, center|{
+    find_antinodes(antennaes, |point, center| {
         if point == center {
             return;
         }
@@ -74,7 +78,7 @@ pub fn part_one(input: &str) -> Option<u32> {
 pub fn part_two(input: &str) -> Option<u32> {
     let (antennaes, width) = make_antenna_db(input);
     let mut antinodes: FxHashSet<Point> = FxHashSet::default();
-    find_antinodes(antennaes, |point, center|{
+    find_antinodes(antennaes, |point, center| {
         if point == center {
             antinodes.insert(*point);
             return;

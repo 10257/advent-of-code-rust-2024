@@ -6,21 +6,27 @@ advent_of_code::solution!(7);
 #[global_allocator]
 static GLOBAL: tikv_jemallocator::Jemalloc = tikv_jemallocator::Jemalloc;
 
-type Operation = fn (u64, u64) -> u64;
+type Operation = fn(u64, u64) -> u64;
 
-pub fn add(a:u64, b:u64) -> u64 {
+pub fn add(a: u64, b: u64) -> u64 {
     a + b
 }
 
-pub fn mul(a:u64, b:u64) -> u64 {
+pub fn mul(a: u64, b: u64) -> u64 {
     a * b
 }
 
-pub fn concat(a:u64, b:u64) -> u64 {
+pub fn concat(a: u64, b: u64) -> u64 {
     a * 10u64.pow(b.ilog10() + 1) + b
 }
 
-pub fn recurse_calc<const N: usize>(nb_list: &[u64], pos: usize, acc: u64, to_calc: &u64, ops: &[Operation; N]) -> bool {
+pub fn recurse_calc<const N: usize>(
+    nb_list: &[u64],
+    pos: usize,
+    acc: u64,
+    to_calc: &u64,
+    ops: &[Operation; N],
+) -> bool {
     if acc > *to_calc {
         return false;
     }
@@ -31,9 +37,8 @@ pub fn recurse_calc<const N: usize>(nb_list: &[u64], pos: usize, acc: u64, to_ca
         return false;
     }
     // this is more the rust way!
-    ops.iter().any(|op| {
-        recurse_calc(nb_list, pos + 1, op(acc, nb_list[pos]), to_calc, ops)
-    })
+    // ops.iter()
+    //     .any(|op| recurse_calc(nb_list, pos + 1, op(acc, nb_list[pos]), to_calc, ops))
     // this is a bit faster
     // if recurse_calc(nb_list, pos + 1, ops[0](acc, nb_list[pos]), to_calc, ops)
     //     || recurse_calc(nb_list, pos + 1, ops[1](acc, nb_list[pos]), to_calc, ops) {
@@ -41,11 +46,11 @@ pub fn recurse_calc<const N: usize>(nb_list: &[u64], pos: usize, acc: u64, to_ca
     //     }
     // N == 3 && recurse_calc(nb_list, pos + 1, ops[2](acc, nb_list[pos]), to_calc, ops)
     // but this gives better timings!
-    // if recurse_calc(nb_list, pos + 1, add(acc, nb_list[pos]), to_calc, ops)
-    //     || recurse_calc(nb_list, pos + 1, mul(acc, nb_list[pos]), to_calc, ops) {
-    //         return true
-    //     }
-    // N == 3 && recurse_calc(nb_list, pos + 1, concat(acc, nb_list[pos]), to_calc, ops)
+    if recurse_calc(nb_list, pos + 1, add(acc, nb_list[pos]), to_calc, ops)
+        || recurse_calc(nb_list, pos + 1, mul(acc, nb_list[pos]), to_calc, ops) {
+            return true
+        }
+    N == 3 && recurse_calc(nb_list, pos + 1, concat(acc, nb_list[pos]), to_calc, ops)
 }
 
 pub fn part_one(input: &str) -> Option<u64> {
