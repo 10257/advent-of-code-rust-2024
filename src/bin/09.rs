@@ -82,7 +82,6 @@ pub struct File {
 }
 
 pub fn find_free_space(disk: &mut [File], size: u64) -> Option<usize> {
-    // println!("++++++++++\n{:?}", disk);
     if let Some((pos, _)) = disk
         .iter()
         .find_position(|x| x.type_ == Type::Free && x.size >= size)
@@ -94,7 +93,6 @@ pub fn find_free_space(disk: &mut [File], size: u64) -> Option<usize> {
 }
 
 pub fn find_update_pos(disk: &mut [File], id: &Option<u64>) -> Option<usize> {
-    // println!("++++++++++\n{:?}", disk);
     if let Some((pos, _)) = disk
         .iter()
         .find_position(|x| x.type_ == Type::File && x.id == *id)
@@ -135,11 +133,11 @@ pub fn part_two(input: &str) -> Option<u64> {
     let disk_clone = disk.clone();
 
     disk_clone
-        .iter()
+        .iter().enumerate()
         .rev()
-        .filter(|f| f.type_ == Type::File)
-        .for_each(|f| {
-            let real_pos = find_update_pos(&mut disk[0..], &f.id).unwrap();
+        .filter(|(_, f)| f.type_ == Type::File)
+        .for_each(|(pos,f)| {
+            let real_pos = pos + find_update_pos(&mut disk[pos..], &f.id).unwrap();
             if let Some(free_pos) = find_free_space(&mut disk[0..real_pos], f.size) {
                 let free_size = disk[free_pos].size;
                 disk.swap(real_pos, free_pos);
