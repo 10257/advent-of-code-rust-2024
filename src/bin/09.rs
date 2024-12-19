@@ -133,10 +133,11 @@ pub fn part_two(input: &str) -> Option<u64> {
     let disk_clone = disk.clone();
 
     disk_clone
-        .iter().enumerate()
+        .iter()
+        .enumerate()
         .rev()
         .filter(|(_, f)| f.type_ == Type::File)
-        .for_each(|(pos,f)| {
+        .for_each(|(pos, f)| {
             let real_pos = pos + find_update_pos(&mut disk[pos..], &f.id).unwrap();
             if let Some(free_pos) = find_free_space(&mut disk[0..real_pos], f.size) {
                 let free_size = disk[free_pos].size;
