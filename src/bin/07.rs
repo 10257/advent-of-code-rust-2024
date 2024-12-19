@@ -47,9 +47,10 @@ pub fn recurse_calc<const N: usize>(
     // N == 3 && recurse_calc(nb_list, pos + 1, ops[2](acc, nb_list[pos]), to_calc, ops)
     // but this gives better timings!
     if recurse_calc(nb_list, pos + 1, add(acc, nb_list[pos]), to_calc, ops)
-        || recurse_calc(nb_list, pos + 1, mul(acc, nb_list[pos]), to_calc, ops) {
-            return true
-        }
+        || recurse_calc(nb_list, pos + 1, mul(acc, nb_list[pos]), to_calc, ops)
+    {
+        return true;
+    }
     N == 3 && recurse_calc(nb_list, pos + 1, concat(acc, nb_list[pos]), to_calc, ops)
 }
 

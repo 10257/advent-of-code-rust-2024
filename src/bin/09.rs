@@ -1,3 +1,5 @@
+use itertools::{repeat_n, Itertools};
+
 advent_of_code::solution!(9);
 
 #[cfg(not(feature = "dhat"))]
@@ -65,8 +67,101 @@ pub fn part_one(input: &str) -> Option<u64> {
     Some(checksum)
 }
 
-pub fn part_two(input: &str) -> Option<u32> {
-    None
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum Type {
+    File,
+    Free,
+    None,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct File {
+    type_: Type,
+    size: u64,
+    id: Option<u64>,
+}
+
+pub fn find_free_space(disk: &mut [File], size: u64) -> Option<usize> {
+    // println!("++++++++++\n{:?}", disk);
+    if let Some((pos, _)) = disk
+        .iter()
+        .find_position(|x| x.type_ == Type::Free && x.size >= size)
+    {
+        Some(pos)
+    } else {
+        None
+    }
+}
+
+pub fn find_update_pos(disk: &mut [File], id: &Option<u64>) -> Option<usize> {
+    // println!("++++++++++\n{:?}", disk);
+    if let Some((pos, _)) = disk
+        .iter()
+        .find_position(|x| x.type_ == Type::File && x.id == *id)
+    {
+        Some(pos)
+    } else {
+        None
+    }
+}
+
+pub fn part_two(input: &str) -> Option<u64> {
+    let mut disk: Vec<File> = input
+        .trim_end()
+        .chars()
+        .enumerate()
+        .map(|(id, x)| {
+            let size = x.to_digit(10).unwrap() as u64;
+            match id % 2 {
+                0 => File {
+                    type_: Type::File,
+                    size,
+                    id: Some(id as u64 / 2),
+                },
+                1 => File {
+                    type_: Type::Free,
+                    size,
+                    id: None,
+                },
+                _ => File {
+                    type_: Type::None,
+                    size: 0,
+                    id: None,
+                },
+            }
+        })
+        .collect();
+
+    let disk_clone = disk.clone();
+
+    disk_clone
+        .iter()
+        .rev()
+        .filter(|f| f.type_ == Type::File)
+        .for_each(|f| {
+            let real_pos = find_update_pos(&mut disk[0..], &f.id).unwrap();
+            if let Some(free_pos) = find_free_space(&mut disk[0..real_pos], f.size) {
+                let free_size = disk[free_pos].size;
+                disk.swap(real_pos, free_pos);
+                if free_size != f.size {
+                    disk.insert(
+                        free_pos + 1,
+                        File {
+                            type_: Type::Free,
+                            size: free_size - f.size,
+                            id: None,
+                        },
+                    );
+                    disk[real_pos + 1].size = f.size;
+                }
+            }
+        });
+    Some(
+        disk.iter()
+            .flat_map(|b| repeat_n(b.id.unwrap_or_default(), b.size as usize))
+            .enumerate()
+            .fold(0, |acc, (bloc_id, file_id)| acc + bloc_id as u64 * file_id),
+    )
 }
 
 #[cfg(test)]
@@ -82,6 +177,6 @@ mod tests {
     #[test]
     fn test_part_two() {
         let result = part_two(&advent_of_code::template::read_file("examples", DAY));
-        assert_eq!(result, None);
+        assert_eq!(result, Some(2858));
     }
 }
