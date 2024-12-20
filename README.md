@@ -11,17 +11,18 @@ Solutions for [Advent of Code](https://adventofcode.com/) in [Rust](https://www.
 
 | Day | Part 1 | Part 2 |
 | :---: | :---: | :---:  |
-| [Day 1](./src/bin/01.rs) | `38.2µs` | `43.2µs` |
-| [Day 2](./src/bin/02.rs) | `41.5µs` | `89.4µs` |
-| [Day 3](./src/bin/03.rs) | `87.2µs` | `114.8µs` |
-| [Day 4](./src/bin/04.rs) | `39.4µs` | `29.9µs` |
-| [Day 5](./src/bin/05.rs) | `230.5µs` | `367.2µs` |
-| [Day 6](./src/bin/06.rs) | `17.5µs` | `73.5ms` |
-| [Day 7](./src/bin/07.rs) | `570.6µs` | `19.6ms` |
-| [Day 8](./src/bin/08.rs) | `6.0µs` | `14.1µs` |
-| [Day 9](./src/bin/09.rs) | `131.6µs` | `20.6ms` |
+| [Day 1](./src/bin/01.rs) | `48.2µs` | `62.2µs` |
+| [Day 2](./src/bin/02.rs) | `55.7µs` | `141.3µs` |
+| [Day 3](./src/bin/03.rs) | `140.7µs` | `196.6µs` |
+| [Day 4](./src/bin/04.rs) | `55.5µs` | `59.2µs` |
+| [Day 5](./src/bin/05.rs) | `287.9µs` | `447.4µs` |
+| [Day 6](./src/bin/06.rs) | `27.6µs` | `103.2ms` |
+| [Day 7](./src/bin/07.rs) | `1.1ms` | `27.1ms` |
+| [Day 8](./src/bin/08.rs) | `7.9µs` | `18.8µs` |
+| [Day 9](./src/bin/09.rs) | `163.2µs` | `36.0ms` |
+| [Day 10](./src/bin/10.rs) | `162.5µs` | `141.6µs` |
 
-**Total: 115.52ms**
+**Total: 169.42ms**
 <!--- benchmarking table --->
 
 ---
@@ -72,7 +73,7 @@ Every [solution](https://github.com/fspoettel/advent-of-code-rust/blob/main/src/
 
 ### ➡️ Download input for a day
 
-> [!IMPORTANT] 
+> [!IMPORTANT]
 > This requires [installing the aoc-cli crate](#configure-aoc-cli-integration).
 
 You can automatically download puzzle input and description by either appending the `--download` flag to `scaffold` (e.g. `cargo scaffold 4 --download`) or with the separate `download` command:
